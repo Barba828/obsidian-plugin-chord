@@ -1,0 +1,115 @@
+import type { ChordType, Tone } from "@buitar/to-guitar";
+import {
+	rootToChord,
+	transChordTaps,
+	Board,
+	chordTagMap,
+} from "@buitar/to-guitar";
+
+const tags = Array.from(chordTagMap.keys());
+
+console.log("lnz chordTagMap", chordTagMap);
+
+export interface ChordListItem {
+	note: string;
+	tag: string;
+	chord?: Partial<ChordType>;
+}
+
+/**
+ * 根据搜索文本获取推荐和弦名称（note + tag）列表
+ * @param search
+ * @returns
+ */
+export const getChordListByStr = (search: string): ChordListItem[] => {
+	if (!search) {
+		return ["C", "D", "E", "F", "G", "A", "B"].map((n) => ({
+			note: n,
+			tag: "",
+			chord: chordTagMap.get(""),
+		}));
+	}
+	if (
+		!["C", "D", "E", "F", "G", "A", "B"].includes(
+			search[0].toLocaleUpperCase()
+		)
+	) {
+		return [];
+	}
+	if (search.length === 1) {
+		return ["", "b", "#", ...tags.slice(1)].map((t) => ({
+			note: search[0],
+			tag: t,
+			chord: chordTagMap.get(t) || chordTagMap.get(""), // "b", "#" 不存在chord，使用默认三和弦
+		}));
+	}
+
+	const { note, tag } = getNoteAndTag(search);
+	return tags
+		.filter((t) => t.includes(tag))
+		.map((t) => ({
+			note,
+			tag: t,
+			chord: chordTagMap.get(t),
+		}));
+};
+
+/**
+ * 根据str获取note和tag
+ * @param str
+ */
+export const getNoteAndTag = (str: string) => {
+	if (!str.length) {
+		throw Error("chord name is empty");
+	}
+	let note = str[0].toLocaleUpperCase(),
+		tag = str.slice(1);
+
+	if (["b", "#"].includes(str[1])) {
+		note = note + str[1];
+		tag = str.slice(2);
+	}
+
+	return {
+		note,
+		tag,
+	};
+};
+
+/**
+ * 根据和弦名称获取taps列表
+ * @param chordItem
+ * @returns
+ */
+export const getTapsByChordItem = (chordItem: ChordListItem, board: Board) => {
+	if (!chordItem.chord) {
+		return [];
+	}
+	const { note, tag } = chordItem;
+	const { chord } = rootToChord(note as Tone, tag);
+	if (!chord) {
+		return [];
+	}
+	const chordTones = chord.map((pitch) => board.notes[pitch % 12] as Tone);
+	return transChordTaps(chordTones, board);
+};
+
+export const getPointsByStr = (str: string, board: Board) => {
+	return str.split("|").map((pointStr) => {
+		const [str, grade] = pointStr.split("-");
+		return board.keyboard[Number(str) - 1][Number(grade)];
+	});
+};
+
+export const getChordName = (chordType: ChordType, board: Board): string => {
+	if (chordType.tone === undefined) {
+		return "";
+	}
+	const note = board.notes[chordType.tone % 12];
+	if (chordType.tone === chordType.over) {
+		return `${note}${chordType.tag}`;
+	} else {
+		const over = board.notes[(chordType?.over || 0) % 12];
+		return `${over}${chordType.tag}/${note}`;
+	}
+};

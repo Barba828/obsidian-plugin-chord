@@ -1,8 +1,28 @@
-/*
+.chord-modal-list__item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.chord-modal-list__item__title {
+    font-weight: bold;
+}
+.chord-modal-list__item__sub-title {
+	opacity: 0.6;
+}
+.chord-modal-list__item__right {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+.chord-modal-list__item__right-interval {
+	font-size: 0.8rem;
+	opacity: 0.8;
+	font-weight: bold;
+	padding: 2px 4px;
+	background-color: var(--dropdown-background-hover);
+	border-radius: 2px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.chord-widget:hover {
+	cursor: pointer;
+}
