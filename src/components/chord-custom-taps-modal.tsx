@@ -3,31 +3,55 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { App, SuggestModal } from "obsidian";
 import { SvgChord } from "@buitar/svg-chord";
-import type { BoardChord } from "@buitar/to-guitar";
+import { pitchToChordType, Board, type BoardChord } from "@buitar/to-guitar";
+import { transToMdCode, getPointsByStr, getChordName } from "src/utils";
 import { transToSvgPoints } from "src/utils/trans-svg";
-import { transToMdCode } from "src/utils";
 
-export class ChordTapsModal extends SuggestModal<BoardChord> {
-	taps: BoardChord[];
-	title?: string;
+export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
+	board: Board;
 
 	/**
 	 * Guitar Taps Modal
 	 * @param app
-	 * @param taps
-	 * @param title Chord Card Title
+	 * @param board
 	 */
-	constructor(app: App, taps: BoardChord[], title?: string) {
+	constructor(app: App, board?: Board) {
 		super(app);
-		this.taps = taps;
-		this.title = title;
-		this.inputEl.disabled = true;
-		this.inputEl.setAttribute("style", "visibility: hidden;");
+		this.setPlaceholder(
+			"Enter the finger position, for example 'x32010' for C chord"
+		);
+		this.board = board || new Board();
 	}
 
 	// Returns all available suggestions.
-	getSuggestions(): BoardChord[] {
-		return this.taps;
+	getSuggestions(query: string): BoardChord[] {
+		const chordTaps = getPointsByStr(query, this.board);
+		const chordTypes = pitchToChordType(
+			Array.from(new Set(chordTaps.map((tap) => tap.tone)))
+		);
+
+		// 无效和弦
+		if (!chordTypes.length) {
+			return [
+				{
+					chordTaps,
+					chordType: {
+						name: "--",
+						name_zh: "--",
+						tag: "",
+					},
+				},
+			];
+		}
+
+		// 同一taps 也许有转位和弦等多个名称
+		return chordTypes.map(
+			(chordType) =>
+				({
+					chordTaps,
+					chordType,
+				} as BoardChord)
+		);
 	}
 
 	// Renders each suggestion item.
@@ -38,7 +62,7 @@ export class ChordTapsModal extends SuggestModal<BoardChord> {
 				<SvgChord
 					points={transToSvgPoints(tap.chordTaps)}
 					size={80}
-					title={this.title}
+					title={getChordName(tap.chordType, this.board)}
 				/>
 				<div
 					style={{
@@ -77,7 +101,12 @@ export class ChordTapsModal extends SuggestModal<BoardChord> {
 
 	// Perform action on the selected suggestion.
 	onChooseSuggestion(tap: BoardChord) {
-		this.insertTextAtCursor(transToMdCode(tap.chordTaps, this.title));
+		this.insertTextAtCursor(
+			transToMdCode(
+				tap.chordTaps,
+				getChordName(tap.chordType, this.board)
+			)
+		);
 	}
 
 	insertTextAtCursor(text: string) {

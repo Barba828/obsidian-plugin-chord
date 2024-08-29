@@ -12,8 +12,9 @@ export class ChordModal extends SuggestModal<ChordListItem> {
 
 	constructor(app: App, board?: Board) {
 		super(app);
-		this.setPlaceholder("Input chord name, like 'Am7'");
+		this.setPlaceholder("Enter chord name, like 'Am7'");
 		this.board = board || new Board();
+		this.emptyStateText = 'No chords.';
 	}
 
 	// Returns all available suggestions.

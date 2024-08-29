@@ -1,4 +1,4 @@
-import type { ChordType, Tone } from "@buitar/to-guitar";
+import type { ChordType, Point, Tone } from "@buitar/to-guitar";
 import {
 	rootToChord,
 	transChordTaps,
@@ -7,8 +7,6 @@ import {
 } from "@buitar/to-guitar";
 
 const tags = Array.from(chordTagMap.keys());
-
-console.log("lnz chordTagMap", chordTagMap);
 
 export interface ChordListItem {
 	note: string;
@@ -94,11 +92,48 @@ export const getTapsByChordItem = (chordItem: ChordListItem, board: Board) => {
 	return transChordTaps(chordTones, board);
 };
 
+/**
+ * 字符串转换为point
+ * 例如:str = "x32010"，=> board.keyboard C 和弦
+ * @transToMdCode 函数的逆操作
+ * @param str
+ * @param board
+ * @returns
+ */
 export const getPointsByStr = (str: string, board: Board) => {
-	return str.split("|").map((pointStr) => {
-		const [str, grade] = pointStr.split("-");
-		return board.keyboard[Number(str) - 1][Number(grade)];
-	});
+	// 仅允许匹配 0-9xX，比如C和弦「x32010」
+	if (!/^[0-9xX]+$/i.test(str)) {
+		return [];
+	}
+
+	const frets = str.slice(0, 6).split("");
+
+	return frets
+		.map((grade, index) => {
+			if (isNaN(Number(grade))) {
+				return null;
+			}
+			return board.keyboard[index][Number(grade)];
+		})
+		.filter((point) => point !== null) as Point[];
+};
+
+/**
+ * Point => :chord:Point:title: (string) string 保存 chord 信息
+ * @getPointsByStr 函数的逆操作
+ * @todo :chord: 文本可以自定义
+ * @param points
+ * @param title
+ * @returns
+ */
+export const transToMdCode = (points: Point[], title?: string) => {
+	const tapArr = ['x', 'x', 'x', 'x', 'x', 'x']; // 六根弦
+	points.forEach((point) => (tapArr[point.string - 1] = String(point.grade)));
+	let code = `:chord:${tapArr.join("")}:`;
+	if (title) {
+		code = code.concat(`${title}:`);
+	}
+	return "`" + code + "`";
 };
 
 export const getChordName = (chordType: ChordType, board: Board): string => {

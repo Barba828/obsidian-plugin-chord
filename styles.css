@@ -4,7 +4,7 @@
 	justify-content: space-between;
 }
 .chord-modal-list__item__title {
-    font-weight: bold;
+	font-weight: bold;
 }
 .chord-modal-list__item__sub-title {
 	opacity: 0.6;
@@ -23,6 +23,24 @@
 	border-radius: 2px;
 }
 
+.chord-widget__wrap {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	vertical-align: bottom;
+}
+
+.chord-widget__middle {
+	vertical-align: middle;
+	transform: translateY(-6px);
+}
 .chord-widget:hover {
 	cursor: pointer;
+}
+
+.horizontal-flex {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 }

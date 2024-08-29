@@ -1,5 +1,6 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { ChordModal } from "src/components/chord-modal";
+import { ChordCustomTapsModal } from "src/components/chord-custom-taps-modal";
 import { createInlineCodeField } from "src/decorations/chord-card-decoration";
 import { chordCardPostProcessor } from "src/decorations/chord-card-processor";
 import { Board } from "@buitar/to-guitar";
@@ -16,6 +17,18 @@ export default class ChordCardPlugin extends Plugin {
 					this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView) {
 					new ChordModal(this.app, this.board).open();
+					return true;
+				}
+			},
+		});
+		this.addCommand({
+			id: "insert-custom-chord-card",
+			name: "Insert Custom chord card",
+			callback: () => {
+				const markdownView =
+					this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (markdownView) {
+					new ChordCustomTapsModal(this.app, this.board).open();
 					return true;
 				}
 			},

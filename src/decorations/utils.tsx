@@ -1,10 +1,10 @@
 // @ts-ignore
 import React from "react";
+import { createRoot } from "react-dom/client";
 import { SvgChord } from "@buitar/svg-chord";
 import { Board, Point } from "@buitar/to-guitar";
-import { createRoot } from "react-dom/client";
-import { transToSvgPoints } from "src/utils/trans-svg";
 import { EditorView, WidgetType } from "@codemirror/view";
+import { transToSvgPoints } from "src/utils/trans-svg";
 import { getPointsByStr } from "src/utils";
 
 export const chordMap = new Map<string, ChordWidget>();
@@ -24,23 +24,37 @@ export const getChordWidget = (key: string, board: Board) => {
 export class ChordWidget extends WidgetType {
 	points: Point[];
 	title: string;
+	type: string;
+	text: string;
+
 	constructor(public readonly key: string, public readonly board: Board) {
 		super();
-		const [,, pointStr, title] = key.split(":");
+		const [, type, pointStr, title, text] = key.split(":");
 		this.points = getPointsByStr(pointStr, board);
 		this.title = title || "";
+		this.type = type;
+		this.text = text;
 	}
 
 	toDOM(view?: EditorView): HTMLElement {
 		const span = document.createElement("span");
 		const root = createRoot(span);
 		root.render(
-			<SvgChord
-				points={transToSvgPoints(this.points)}
-				size={80}
-				title={this.title}
-				className="chord-widget"
-			/>
+			<span
+				className={`chord-widget__wrap ${
+					this.text && "chord-widget__middle"
+				}`}
+			>
+				<SvgChord
+					points={transToSvgPoints(this.points)}
+					size={80}
+					title={this.title}
+					className="chord-widget"
+				/>
+				{this.text && (
+					<span className="chord-widget__wrap-text">{this.text}</span>
+				)}
+			</span>
 		);
 		return span;
 	}
