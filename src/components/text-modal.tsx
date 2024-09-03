@@ -32,9 +32,11 @@ export class InsertTextModal extends Modal {
 				.onChange((value) => {
 					this.chordText = value;
 				})
-		);
+		).descEl.innerHTML =
+			"Set the chord card fixed on the text content. If set to empty, it will be a pure card.";
 
 		this.chordSetting = new Setting(contentEl).setName("Chord");
+		this.chordSetting.descEl.innerHTML = "Tap to set chord card.";
 		this.updateSettings(this.chordOriginText);
 
 		new Setting(contentEl).addButton((btn) =>
@@ -72,10 +74,8 @@ export class InsertTextModal extends Modal {
 						).open()
 					);
 				})
-				.addButton((btn) =>
-					btn
-						.setButtonText("Clean")
-						.onClick(() => this.updateSettings())
+				.addExtraButton((btn) =>
+					btn.setIcon("trash").onClick(() => this.updateSettings())
 				);
 		} else {
 			/**
