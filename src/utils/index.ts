@@ -133,9 +133,15 @@ export const transToMdCode = (points: Point[], title?: string) => {
 	if (title) {
 		code = code.concat(`${title}:`);
 	}
-	return "`" + code + "`";
+	return code;
 };
 
+/**
+ * chordType => chordName
+ * @param chordType 
+ * @param board 
+ * @returns 
+ */
 export const getChordName = (chordType: ChordType, board: Board): string => {
 	if (chordType.tone === undefined) {
 		return "";
@@ -147,4 +153,20 @@ export const getChordName = (chordType: ChordType, board: Board): string => {
 		const over = board.notes[(chordType?.over || 0) % 12];
 		return `${over}${chordType.tag}/${note}`;
 	}
+};
+
+/**
+ * 从key中解析和弦 type、pointStr、title、text
+ * @param key 
+ * @returns 
+ */
+export const useChordText = (key: string) => {
+	const [, type = "chord", pointStr = "", title = "", text = ""] =
+		key.split(":");
+	return {
+		type,
+		pointStr,
+		title,
+		text,
+	};
 };

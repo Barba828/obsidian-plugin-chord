@@ -8,13 +8,10 @@ import { ChordTapsModal } from "src/components/chord-taps-modal";
 import { Board } from "@buitar/to-guitar";
 
 export class ChordModal extends SuggestModal<ChordListItem> {
-	board: Board;
-
-	constructor(app: App, board?: Board) {
+	constructor(app: App, private board: Board, public onChooseTapText?: (text: string) => void) {
 		super(app);
 		this.setPlaceholder("Enter chord name, like 'Am7'");
-		this.board = board || new Board();
-		this.emptyStateText = 'No chords.';
+		this.emptyStateText = "No chords.";
 	}
 
 	// Returns all available suggestions.
@@ -53,6 +50,6 @@ export class ChordModal extends SuggestModal<ChordListItem> {
 	onChooseSuggestion(chordItem: ChordListItem) {
 		const taps = getTapsByChordItem(chordItem, this.board);
 		const title = chordItem.note + chordItem.tag;
-		new ChordTapsModal(this.app, taps, title).open();
+		new ChordTapsModal(this.app, taps, title, this.onChooseTapText).open();
 	}
 }

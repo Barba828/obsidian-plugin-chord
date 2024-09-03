@@ -4,23 +4,36 @@ import { createRoot } from "react-dom/client";
 import { App, SuggestModal } from "obsidian";
 import { SvgChord } from "@buitar/svg-chord";
 import { pitchToChordType, Board, type BoardChord } from "@buitar/to-guitar";
-import { transToMdCode, getPointsByStr, getChordName } from "src/utils";
+import { transToMdCode, getPointsByStr, getChordName, useChordText } from "src/utils";
 import { transToSvgPoints } from "src/utils/trans-svg";
 
 export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
-	board: Board;
-
 	/**
 	 * Guitar Taps Modal
 	 * @param app
 	 * @param board
 	 */
-	constructor(app: App, board?: Board) {
+	constructor(
+		app: App,
+		private board: Board,
+		public onChooseTapText?: (text: string) => void,
+		public defaultSearch?: string
+	) {
 		super(app);
 		this.setPlaceholder(
 			"Enter the finger position, for example 'x32010' for C chord"
 		);
-		this.board = board || new Board();
+	}
+
+	onOpen() {
+		super.onOpen();
+		if (this.defaultSearch) {
+			const { pointStr} = useChordText(this.defaultSearch);
+			// 设置默认搜索值
+			this.inputEl.value = pointStr;
+			// 触发输入事件以更新建议列表
+			this.inputEl.dispatchEvent(new Event("input"));
+		}
 	}
 
 	// Returns all available suggestions.
@@ -101,27 +114,10 @@ export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
 
 	// Perform action on the selected suggestion.
 	onChooseSuggestion(tap: BoardChord) {
-		this.insertTextAtCursor(
-			transToMdCode(
-				tap.chordTaps,
-				getChordName(tap.chordType, this.board)
-			)
+		const insertText = transToMdCode(
+			tap.chordTaps,
+			getChordName(tap.chordType, this.board)
 		);
-	}
-
-	insertTextAtCursor(text: string) {
-		const editor = this.app.workspace.activeEditor?.editor;
-		if (!editor) return;
-
-		// Insert text
-		const cursorPos = editor?.getCursor();
-		editor.replaceRange(text, cursorPos, cursorPos);
-
-		// Set cursor position
-		const newCursorPos = {
-			line: cursorPos.line,
-			ch: cursorPos.ch + text.length,
-		};
-		editor.setCursor(newCursorPos);
+		this.onChooseTapText?.(insertText);
 	}
 }

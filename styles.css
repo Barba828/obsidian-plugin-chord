@@ -30,12 +30,19 @@
 	vertical-align: bottom;
 }
 
-.chord-widget__middle {
-	vertical-align: middle;
-	transform: translateY(-6px);
-}
-.chord-widget:hover {
+.chord-widget {
 	cursor: pointer;
+	border-radius: 0.6rem;
+}
+
+.chord-widget__wrap:hover .chord-widget {
+	background-color: var(--dropdown-background-hover);
+	transition: all 0.2s ease-in-out;
+}
+
+.chord-widget__wrap:hover .chord-widget__wrap-text {
+	color: var(--color-base-70);
+	transition: all 0.2s ease-in-out;
 }
 
 .horizontal-flex {
@@ -43,4 +50,9 @@
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
+}
+
+.chord-card-setting-btn {
+	height: auto;
+	padding: var(--size-4-3) var(--size-4-3);
 }

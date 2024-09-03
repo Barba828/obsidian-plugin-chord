@@ -8,19 +8,19 @@ import { transToSvgPoints } from "src/utils/trans-svg";
 import { transToMdCode } from "src/utils";
 
 export class ChordTapsModal extends SuggestModal<BoardChord> {
-	taps: BoardChord[];
-	title?: string;
-
 	/**
 	 * Guitar Taps Modal
 	 * @param app
 	 * @param taps
 	 * @param title Chord Card Title
 	 */
-	constructor(app: App, taps: BoardChord[], title?: string) {
+	constructor(
+		app: App,
+		private taps: BoardChord[],
+		private title?: string,
+		private onChooseTapText?: (text: string) => void
+	) {
 		super(app);
-		this.taps = taps;
-		this.title = title;
 		this.inputEl.disabled = true;
 		this.inputEl.setAttribute("style", "visibility: hidden;");
 	}
@@ -77,22 +77,7 @@ export class ChordTapsModal extends SuggestModal<BoardChord> {
 
 	// Perform action on the selected suggestion.
 	onChooseSuggestion(tap: BoardChord) {
-		this.insertTextAtCursor(transToMdCode(tap.chordTaps, this.title));
-	}
-
-	insertTextAtCursor(text: string) {
-		const editor = this.app.workspace.activeEditor?.editor;
-		if (!editor) return;
-
-		// Insert text
-		const cursorPos = editor?.getCursor();
-		editor.replaceRange(text, cursorPos, cursorPos);
-
-		// Set cursor position
-		const newCursorPos = {
-			line: cursorPos.line,
-			ch: cursorPos.ch + text.length,
-		};
-		editor.setCursor(newCursorPos);
+		const insertText = transToMdCode(tap.chordTaps, this.title)
+		this.onChooseTapText?.(insertText);
 	}
 }
