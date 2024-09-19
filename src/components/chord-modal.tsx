@@ -2,16 +2,33 @@ import { App, SuggestModal } from "obsidian";
 import {
 	getChordListByStr,
 	getTapsByChordItem,
+	useChordText,
 	type ChordListItem,
 } from "src/utils";
 import { ChordTapsModal } from "src/components/chord-taps-modal";
 import { Board } from "@buitar/to-guitar";
 
 export class ChordModal extends SuggestModal<ChordListItem> {
-	constructor(app: App, private board: Board, public onChooseTapText?: (text: string) => void) {
+	constructor(
+		app: App,
+		private board: Board,
+		public onChooseTapText?: (text: string) => void,
+		public defaultSearch?: string
+	) {
 		super(app);
 		this.setPlaceholder("Enter chord name, like 'Am7'");
 		this.emptyStateText = "No chords.";
+	}
+
+	onOpen() {
+		super.onOpen();
+		if (this.defaultSearch) {
+			const { title } = useChordText(this.defaultSearch);
+			// 设置默认搜索值
+			this.inputEl.value = title;
+			// 触发输入事件以更新建议列表
+			this.inputEl.dispatchEvent(new Event("input"));
+		}
 	}
 
 	// Returns all available suggestions.

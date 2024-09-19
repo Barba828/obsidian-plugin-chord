@@ -4,7 +4,12 @@ import { createRoot } from "react-dom/client";
 import { App, SuggestModal } from "obsidian";
 import { SvgChord } from "@buitar/svg-chord";
 import { pitchToChordType, Board, type BoardChord } from "@buitar/to-guitar";
-import { transToMdCode, getPointsByStr, getChordName, useChordText } from "src/utils";
+import {
+	transToMdCode,
+	getPointsByStr,
+	getChordName,
+	useChordText,
+} from "src/utils";
 import { transToSvgPoints } from "src/utils/trans-svg";
 
 export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
@@ -28,7 +33,7 @@ export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
 	onOpen() {
 		super.onOpen();
 		if (this.defaultSearch) {
-			const { pointStr} = useChordText(this.defaultSearch);
+			const { pointStr } = useChordText(this.defaultSearch);
 			// 设置默认搜索值
 			this.inputEl.value = pointStr;
 			// 触发输入事件以更新建议列表

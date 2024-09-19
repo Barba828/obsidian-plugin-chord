@@ -28,6 +28,7 @@
 	flex-direction: column;
 	align-items: center;
 	vertical-align: bottom;
+	text-decoration: underline;
 }
 
 .chord-widget {

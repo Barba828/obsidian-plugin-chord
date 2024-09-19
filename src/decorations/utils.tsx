@@ -53,6 +53,7 @@ export class ChordWidget extends WidgetType {
 					points={transToSvgPoints(this.points)}
 					size={80}
 					title={this.title}
+					color="var(--text-normal)"
 					className="chord-widget"
 				/>
 				{this.text && (

@@ -25,19 +25,52 @@ export class InsertTextModal extends Modal {
 
 		contentEl.createEl("h1", { text: "Insert Chord Card" });
 
-		new Setting(contentEl).setName("Text").addText((text) =>
-			text
-				.setValue(this.chordText)
-				.setPlaceholder("Enter chord text")
-				.onChange((value) => {
-					this.chordText = value;
-				})
-		).descEl.innerHTML =
-			"Set the chord card fixed on the text content. If set to empty, it will be a pure card.";
+		console.log(this.chordText);
 
-		this.chordSetting = new Setting(contentEl).setName("Chord");
-		this.chordSetting.descEl.innerHTML = "Tap to set chord card.";
-		this.updateSettings(this.chordOriginText);
+		new Setting(contentEl)
+			.setName("Text")
+			.addText((text) =>
+				text
+					.setValue(this.chordText)
+					.setPlaceholder("Enter chord text")
+					.onChange((value) => {
+						this.chordText = value;
+					})
+			)
+			.setDesc(
+				"Set the chord card fixed on the text content. If set to empty, it will be a pure card."
+			);
+
+		new Setting(contentEl)
+			.setName("Chord Card")
+			.addButton((btn) => {
+				btn.setButtonText("Set chord by name").onClick(() => {
+					new ChordModal(
+						this.app,
+						this.board,
+						this.updatePreviewCard,
+						this.chordOriginText
+					).open();
+				});
+			})
+			.addButton((btn) => {
+				btn.setButtonText("Set chord by taps").onClick(() => {
+					new ChordCustomTapsModal(
+						this.app,
+						this.board,
+						this.updatePreviewCard,
+						this.chordOriginText
+					).open();
+				});
+			})
+			.setDesc(
+				"Set chord-card by chord name or finger taps on guitar board."
+			);
+
+		this.chordSetting = new Setting(contentEl)
+			.setName("Card Preview")
+			.setDesc("Tap to clear the card preview.");
+		this.updatePreviewCard(this.chordOriginText);
 
 		new Setting(contentEl).addButton((btn) =>
 			btn
@@ -50,14 +83,15 @@ export class InsertTextModal extends Modal {
 		);
 	}
 
-	updateSettings = (text = "") => {
+	/**
+	 * 更新Setting项 展示PreviewCard
+	 * @param text 
+	 */
+	updatePreviewCard = (text = "") => {
 		this.chordSetting.clear();
 		this.chordOriginText = text;
 
 		if (text) {
-			/**
-			 * 使用 Setting Button 显示 ChordCard
-			 */
 			this.chordSetting
 				.addButton((btn) => {
 					const chordCardDom = new ChordWidget(
@@ -69,36 +103,14 @@ export class InsertTextModal extends Modal {
 						new ChordCustomTapsModal(
 							this.app,
 							this.board,
-							this.updateSettings,
+							this.updatePreviewCard,
 							this.chordOriginText
 						).open()
 					);
 				})
 				.addExtraButton((btn) =>
-					btn.setIcon("trash").onClick(() => this.updateSettings())
+					btn.setIcon("trash").onClick(() => this.updatePreviewCard())
 				);
-		} else {
-			/**
-			 * 使用 Setting Button 显示 Add Chord 和 Add Custom Chord 入口
-			 */
-			this.chordSetting.addButton((btn) => {
-				btn.setButtonText("Add Chord").onClick(() => {
-					new ChordModal(
-						this.app,
-						this.board,
-						this.updateSettings
-					).open();
-				});
-			});
-			this.chordSetting.addButton((btn) => {
-				btn.setButtonText("Add Custom Chord").onClick(() => {
-					new ChordCustomTapsModal(
-						this.app,
-						this.board,
-						this.updateSettings
-					).open();
-				});
-			});
 		}
 	};
 
@@ -119,10 +131,22 @@ export class InsertTextModal extends Modal {
 		contentEl.empty();
 	}
 
+	/**
+	 * 初始化 text 数据
+	 * @param str 默认 chord str
+	 */
 	initText = (str?: string) => {
-		if (!str) return;
-		const { type, pointStr, title, text } = useChordText(str);
-		this.chordText = text;
-		this.chordOriginText = `:${type}:${pointStr}:${title}:`;
+		// 存在默认值，从默认值获取当前chord
+		if (str) {
+			const { type, pointStr, title, text } = useChordText(str);			
+			this.chordText = text;
+			this.chordOriginText = `:${type}:${pointStr}:${title}:`;
+			return;
+		}
+		// 默认设置 selection 为chordText
+		const editor = this.app.workspace.activeEditor?.editor;
+		if (editor) {
+			this.chordText = editor.getSelection();
+		}
 	};
 }

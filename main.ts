@@ -76,6 +76,10 @@ export default class ChordCardPlugin extends Plugin {
 		this.registerMarkdownPostProcessor((el, ctx) => {
 			chordCardPostProcessor(el, ctx, this.board);
 		});
+
+		// this.registerEvent(
+		// 	this.app.workspace.on("active-leaf-change", this.updateActionIcon)
+		// );
 	}
 
 	/**
@@ -83,20 +87,20 @@ export default class ChordCardPlugin extends Plugin {
 	 * @param text
 	 * @returns
 	 */
-	insertTextAtCursor(
+	insertTextAtCursor = (
 		text: string,
 		position?: { from: EditorPosition; to?: EditorPosition }
-	) {
+	) => {
 		const editor = this.app.workspace.activeEditor?.editor;
 		if (!editor) return;
 
 		const from = position?.from || editor.getCursor("from");
 		const to = position?.to || editor.getCursor("to");
 
-		/** inline-code +空格 显示和弦卡片 */
+		/** inline-code + 空格 显示和弦卡片 */
 		let _text = "`" + text + "` ";
 		const { pointStr } = useChordText(text);
-		/** 若无效和弦，插入纯文本+空格 */
+		/** 若无效和弦，插入纯文本 + 空格 */
 		if (!pointStr) {
 			_text = text + " ";
 		}
@@ -108,6 +112,42 @@ export default class ChordCardPlugin extends Plugin {
 			ch: from.ch + _text.length,
 		};
 		editor.setCursor(newCursorPos);
+	}
+
+	/**
+	 * @todo 完善 view 内 chord 设置菜单
+	 * @returns 
+	 */
+	updateActionIcon = () => {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!activeView) return;
+
+		const hasChord = this.hasChordCard();
+		const existingIcon = activeView.containerEl.find('[aria-label="Chord setting"]')
+
+		activeView.getIcon();
+
+		// 如果 hasChord 且没有 Chord 菜单，添加菜单
+		if (hasChord && !existingIcon) {
+			activeView.addAction("music", "Chord setting", () => {
+				console.log("Music icon clicked");
+			});
+		}
+
+		// 如果 !hasChord 且存在 Chord 菜单，移除菜单
+		if (!hasChord && existingIcon) {
+			activeView.addAction
+			existingIcon.remove();
+		}
+	}
+
+	/**
+	 * 判断当前View是否存在chord-card
+	 * @returns
+	 */
+	hasChordCard = () => {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		return activeView && activeView.contentEl.find(".chord-widget__wrap");
 	}
 
 	onunload() {}
