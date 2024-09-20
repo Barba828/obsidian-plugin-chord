@@ -26,7 +26,7 @@ export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
 	) {
 		super(app);
 		this.setPlaceholder(
-			"Enter the finger position, for example 'x32010' for C chord"
+			"Enter the finger position, for example 'x-3-2-0-1-0' for C chord"
 		);
 	}
 

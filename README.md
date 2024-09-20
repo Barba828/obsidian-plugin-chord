@@ -16,6 +16,6 @@ You can combine it with other plugins for more convenient use.
 
 Of course, the most direct and basic usage is to use obsidian command(`ctrl + p`). And you can find that there are two ways to enter chords.
 1. Enter chord name, like `Am7`;
-2. Enter the finger position, for example `x32010` for C chord;
+2. Enter the finger position, for example `x-3-2-0-1-0` for C chord;
 ![video](./assets/video_3.gif)
 

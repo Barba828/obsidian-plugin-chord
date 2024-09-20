@@ -94,21 +94,22 @@ export const getTapsByChordItem = (chordItem: ChordListItem, board: Board) => {
 
 /**
  * 字符串转换为point
- * 例如:str = "x32010"，=> board.keyboard C 和弦
+ * 例如:str = "x-3-2-0-1-0"，=> board.keyboard C 和弦
  * @transToMdCode 函数的逆操作
  * @param str
  * @param board
  * @returns
  */
 export const getPointsByStr = (str: string, board: Board) => {
-	// 仅允许匹配 0-9xX，比如C和弦「x32010」
-	if (!/^[0-9xX]+$/i.test(str)) {
+	// 仅允许匹配 0-9xX-，比如C和弦「x32010」[x-x-x-11-10-12]
+	if (!/^[0-9xX-]+$/i.test(str)) {
 		return [];
 	}
 
-	const frets = str.slice(0, 6).split("");
+	const frets = str.includes("-") ? str.split("-") : str.split("");
 
 	return frets
+		.slice(0, 6)
 		.map((grade, index) => {
 			if (isNaN(Number(grade))) {
 				return null;
@@ -127,9 +128,9 @@ export const getPointsByStr = (str: string, board: Board) => {
  * @returns
  */
 export const transToMdCode = (points: Point[], title?: string) => {
-	const tapArr = ['x', 'x', 'x', 'x', 'x', 'x']; // 六根弦
+	const tapArr = ["x", "x", "x", "x", "x", "x"]; // 六根弦
 	points.forEach((point) => (tapArr[point.string - 1] = String(point.grade)));
-	let code = `:chord:${tapArr.join("")}:`;
+	let code = `:chord:${tapArr.join("-")}:`;
 	if (title) {
 		code = code.concat(`${title}:`);
 	}
@@ -138,9 +139,9 @@ export const transToMdCode = (points: Point[], title?: string) => {
 
 /**
  * chordType => chordName
- * @param chordType 
- * @param board 
- * @returns 
+ * @param chordType
+ * @param board
+ * @returns
  */
 export const getChordName = (chordType: ChordType, board: Board): string => {
 	if (chordType.tone === undefined) {
@@ -157,8 +158,8 @@ export const getChordName = (chordType: ChordType, board: Board): string => {
 
 /**
  * 从key中解析和弦 type、pointStr、title、text
- * @param key 
- * @returns 
+ * @param key
+ * @returns
  */
 export const useChordText = (key: string) => {
 	const [, type = "chord", pointStr = "", title = "", text = ""] =
