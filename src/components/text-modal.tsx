@@ -23,9 +23,7 @@ export class InsertTextModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "Insert Chord Card" });
-
-		console.log(this.chordText);
+		contentEl.createEl("h1", { text: "Insert chord card" });
 
 		new Setting(contentEl)
 			.setName("Text")
@@ -42,7 +40,7 @@ export class InsertTextModal extends Modal {
 			);
 
 		new Setting(contentEl)
-			.setName("Chord Card")
+			.setName("Chord card")
 			.addButton((btn) => {
 				btn.setButtonText("Set chord by name").onClick(() => {
 					new ChordModal(
@@ -68,7 +66,7 @@ export class InsertTextModal extends Modal {
 			);
 
 		this.chordSetting = new Setting(contentEl)
-			.setName("Card Preview")
+			.setName("Card preview")
 			.setDesc("Tap to clear the card preview.");
 		this.updatePreviewCard(this.chordOriginText);
 
