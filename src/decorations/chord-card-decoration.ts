@@ -10,17 +10,24 @@ import {
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { getChordWidget } from "src/decorations/utils";
 import { EditorPosition } from "obsidian";
+import { ChordCardPluginSettings } from "src/setting";
 
-export const createInlineCodeField = (
-	board: Board,
+interface InlineCodeFieldParams {
+	board: Board;
+	options: ChordCardPluginSettings;
 	onClick?: (
 		key: string,
 		position: { from: EditorPosition; to?: EditorPosition },
 		ev?: MouseEvent
-	) => void
-) =>
-	StateField.define<DecorationSet>({
+	) => void;
+}
 
+export const createInlineCodeField = ({
+	board,
+	onClick,
+	options,
+}: InlineCodeFieldParams) =>
+	StateField.define<DecorationSet>({
 		create(state): DecorationSet {
 			return Decoration.none;
 		},
@@ -28,8 +35,10 @@ export const createInlineCodeField = (
 			decorations: DecorationSet,
 			transaction: Transaction
 		): DecorationSet {
+			if (!options.renderCode) {
+				return Decoration.none;
+			}
 			const builder = new RangeSetBuilder<Decoration>();
-
 			syntaxTree(transaction.state).iterate({
 				enter(node: TreeCursor) {
 					if (node.type.name === "inline-code") {
@@ -45,16 +54,23 @@ export const createInlineCodeField = (
 
 						const key = transaction.state.doc.sliceString(from, to);
 						if (key.startsWith(":chord:") && key.endsWith(":")) {
-							const widget = getChordWidget(key, board, (event) =>
-								onClick?.(
-									key,
-									{
-										from: { line: fromLine, ch: fromCh },
-										to: { line: toLine, ch: toCh },
-									},
-									event
-								)
-							);
+							const widget = getChordWidget({
+								key,
+								board,
+								options,
+								onClick: (event) =>
+									onClick?.(
+										key,
+										{
+											from: {
+												line: fromLine,
+												ch: fromCh,
+											},
+											to: { line: toLine, ch: toCh },
+										},
+										event
+									),
+							});
 							builder.add(
 								node.from - 1,
 								node.to + 1,
