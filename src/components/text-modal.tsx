@@ -75,8 +75,8 @@ export class InsertTextModal extends Modal {
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
+					this.save();
 					this.close();
-					this.onSave();
 				})
 		);
 	}
@@ -113,7 +113,7 @@ export class InsertTextModal extends Modal {
 		}
 	};
 
-	onSave = () => {
+	save = () => {
 		if (!this.chordOriginText) {
 			this.onChooseTapText?.(this.chordText);
 			return;

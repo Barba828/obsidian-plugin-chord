@@ -41,10 +41,19 @@ export const createInlineCodeField = ({
 			const builder = new RangeSetBuilder<Decoration>();
 			syntaxTree(transaction.state).iterate({
 				enter(node: TreeCursor) {
+					const doc = transaction.state.doc;
+					const from = node.from;
+					const to = node.to;
+
 					if (node.type.name === "inline-code") {
-						const doc = transaction.state.doc;
-						const from = node.from;
-						const to = node.to;
+						// 清理无效 inline-code
+						const str = transaction.state.doc.sliceString(
+							from - 1,
+							to + 1
+						);
+						if (!str.startsWith("`") || !str.endsWith("`")) {
+							return;
+						}
 
 						// 将偏移量转换为行和列
 						const fromLine = doc.lineAt(from).number - 1; // 行号从 0 开始计数
@@ -58,19 +67,24 @@ export const createInlineCodeField = ({
 								key,
 								board,
 								options,
-								onClick: (event) =>
-									onClick?.(
-										key,
-										{
-											from: {
-												line: fromLine,
-												ch: fromCh,
-											},
-											to: { line: toLine, ch: toCh },
-										},
-										event
-									),
 							});
+							/**
+							 * 这里不在 widget 构造函数中传入 onClick，因为 click 的 position 参数会变化
+							 * 选择每次手动 setClick
+							 */
+							widget.setClick((event: MouseEvent) =>
+								onClick?.(
+									key,
+									{
+										from: {
+											line: fromLine,
+											ch: fromCh,
+										},
+										to: { line: toLine, ch: toCh },
+									},
+									event
+								)
+							);
 							builder.add(
 								node.from - 1,
 								node.to + 1,

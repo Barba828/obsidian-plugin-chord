@@ -44,14 +44,13 @@ export class ChordWidget extends WidgetType {
 	type: string;
 	text: string;
 
+	contentEl: HTMLElement;
+
 	constructor(
 		public readonly key: string,
 		public readonly board: Board,
-		public readonly onClick?: (ev: MouseEvent) => void,
-		public readonly options?: Pick<
-			ChordCardPluginSettings,
-			"displayMode" | "size"
-		>
+		public onClick?: (ev: MouseEvent) => void,
+		public options?: Pick<ChordCardPluginSettings, "displayMode" | "size">
 	) {
 		super();
 		const { type, pointStr, title, text } = useChordText(key);
@@ -109,10 +108,15 @@ export class ChordWidget extends WidgetType {
 				)}
 			</span>
 		);
-		if (this.onClick) {
-			span.onclick = this.onClick;
-		}
+		this.contentEl = span;
+		this.setClick(this.onClick);
 		return span;
+	}
+
+	setClick(onClick?: (ev: MouseEvent) => void) {
+		if (onClick && this.contentEl) {
+			this.contentEl.onclick = onClick;
+		}
 	}
 }
 
