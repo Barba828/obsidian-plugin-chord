@@ -36,7 +36,7 @@ export const useCommonSettings = ({
 		});
 
 	settingsEl.size = new Setting(containerEl)
-		.setName("Chord Card Size")
+		.setName("Chord card size")
 		.setDesc("Select the size of the chord card.")
 		.addDropdown((dropdown) => {
 			dropdown
@@ -52,13 +52,13 @@ export const useCommonSettings = ({
 		.setDisabled(!settings.renderCode);
 
 	settingsEl.displayMode = new Setting(containerEl)
-		.setName("Chord Card Display Mode")
+		.setName("Chord card display mode")
 		.setDesc("Select the display mode for the chord card.")
 		.addDropdown((dropdown) => {
 			dropdown
-				.addOption(ChordCardDisplayMode.DEFAULT, "Default")
-				.addOption(ChordCardDisplayMode.TEXT, "Text")
-				.addOption(ChordCardDisplayMode.FIXED, "Fixed")
+				.addOption(ChordCardDisplayMode.Default, "Default")
+				.addOption(ChordCardDisplayMode.Text, "Text")
+				.addOption(ChordCardDisplayMode.Fixed, "Fixed")
 				.setValue(settings.displayMode)
 				.onChange((value: ChordCardDisplayMode) => {
 					settings.displayMode = value;

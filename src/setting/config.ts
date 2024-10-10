@@ -6,6 +6,6 @@ import {
 
 export const DEFAULT_SETTINGS: ChordCardPluginSettings = {
 	size: ChordCardSize.Medium,
-	displayMode: ChordCardDisplayMode.DEFAULT,
+	displayMode: ChordCardDisplayMode.Default,
 	renderCode: true,
 };

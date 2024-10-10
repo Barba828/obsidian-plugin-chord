@@ -11,6 +11,7 @@ import {
 	DEFAULT_SETTINGS,
 	ChordCardPluginTab,
 	ChordCardSettingModal,
+	ChordCardConfigModal,
 } from "src/setting";
 
 export default class ChordCardPlugin extends Plugin {
@@ -122,9 +123,16 @@ export default class ChordCardPlugin extends Plugin {
 
 			this.actions["open-settings"] = activeView.addAction(
 				"settings-2",
-				"Set chord card",
+				"Chord card settings",
 				() => {
 					new ChordCardSettingModal(this.app, this).open();
+				}
+			);
+			this.actions["open-config"] = activeView.addAction(
+				"file-edit",
+				"Page chord config",
+				() => {
+					new ChordCardConfigModal(this.app, this).open();
 				}
 			);
 			this.actions["open-render"] = activeView.addAction(
@@ -248,6 +256,7 @@ export default class ChordCardPlugin extends Plugin {
 		}
 
 		this.actions["open-settings"].setCssStyles({ display: "block" });
+		this.actions["open-config"].setCssStyles({ display: "block" });
 		this.actions["open-render"].setCssStyles({
 			display: this.settings.renderCode ? "block" : "none",
 		});

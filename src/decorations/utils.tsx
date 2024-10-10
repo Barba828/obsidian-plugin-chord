@@ -67,7 +67,7 @@ export class ChordWidget extends WidgetType {
 		const size = sizeMap[this.options?.size || ChordCardSize.Medium];
 		root.render(
 			<span className={`chord-widget__wrap`}>
-				{this.options?.displayMode === ChordCardDisplayMode.TEXT ? (
+				{this.options?.displayMode === ChordCardDisplayMode.Text ? (
 					<>
 						<SvgChord
 							points={transToSvgPoints(this.points)}
@@ -80,7 +80,7 @@ export class ChordWidget extends WidgetType {
 							{this.title}
 						</div>
 					</>
-				) : this.options?.displayMode === ChordCardDisplayMode.FIXED ? (
+				) : this.options?.displayMode === ChordCardDisplayMode.Fixed ? (
 					<>
 						<SvgChord
 							points={transToSvgPoints(this.points)}

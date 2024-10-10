@@ -1,10 +1,13 @@
-import type { ChordType, Point, Tone } from "@buitar/to-guitar";
+import type { ChordType, NoteAll, Point, Tone } from "@buitar/to-guitar";
 import {
 	rootToChord,
 	transChordTaps,
 	Board,
 	chordTagMap,
+	transPitch,
+	NOTE_LIST,
 } from "@buitar/to-guitar";
+import { PageChordSetting } from "src/setting";
 
 const tags = Array.from(chordTagMap.keys());
 
@@ -143,15 +146,15 @@ export const transToMdCode = (points: Point[], title?: string) => {
  * @param board
  * @returns
  */
-export const getChordName = (chordType: ChordType, board: Board): string => {
+export const getChordName = (chordType: ChordType): string => {
 	if (chordType.tone === undefined) {
 		return "";
 	}
-	const note = board.notes[chordType.tone % 12];
+	const note = NOTE_LIST[chordType.tone % 12];
 	if (chordType.tone === chordType.over) {
 		return `${note}${chordType.tag}`;
 	} else {
-		const over = board.notes[(chordType?.over || 0) % 12];
+		const over = NOTE_LIST[(chordType?.over || 0) % 12];
 		return `${over}${chordType.tag}/${note}`;
 	}
 };
@@ -170,4 +173,69 @@ export const useChordText = (key: string) => {
 		title,
 		text,
 	};
+};
+
+const tonalOffset: Record<PageChordSetting["mode"], number> = {
+	major: 0,
+	minor: 3,
+};
+interface ChangeKeyOption {
+	key: PageChordSetting["key"];
+	mode?: PageChordSetting["mode"];
+	targetKey: PageChordSetting["key"];
+	targetMode?: PageChordSetting["mode"];
+}
+
+/**
+ * 获取调式转换的半音pitch偏移量（0-11 模12）
+ * @example [C] => [A] 9
+ * @example [A] => [Am] 3
+ * @example [C] => [Am] 0
+ */
+export const getChangeKeyOffset = ({
+	key,
+	mode,
+	targetKey,
+	targetMode,
+}: ChangeKeyOption) => {
+	const _tonalOffset =
+		tonalOffset[targetMode || "major"] - tonalOffset[mode || "major"];
+	const _keyOffset =
+		transPitch(targetKey as NoteAll) - transPitch(key as NoteAll);
+	return (_tonalOffset + _keyOffset + 12) % 12;
+};
+
+/**
+ * 转换 chordTexts 调式
+ * 比如 「:chord:x-3-2-0-1-0:C:」 => 升Key 「:chord:x-x-0-2-3-2:D:」
+ * @param chordTexts
+ * @param board
+ * @param option 调式配置
+ * @returns
+ */
+export const transChordChangeKey = (
+	chordText: string,
+	board: Board,
+	option: ChangeKeyOption
+) => {
+	// 获取调式转换半音偏移
+	const pitchOffset = getChangeKeyOffset(option);
+
+	// 1. chordText 还原为指板 point 并获取音高
+	const { pointStr } = useChordText(chordText);
+	const points = getPointsByStr(pointStr, board);
+	// 2. 根据 pitchOffset 转换音高
+	const nextTones = Array.from(
+		new Set(points.map((point) => (point.tone + pitchOffset + 12) % 12))
+	);
+	// 3. 转换音高后，获取和弦，取该和弦的第一个 taps 指法
+	const nextNotes = nextTones.map((tone) => board.notesOnC[tone]);
+	const nextChordTap = transChordTaps(nextNotes)[0];
+
+	// 4. 转换为 mdCode
+	const nextText = transToMdCode(
+		nextChordTap.chordTaps,
+		getChordName(nextChordTap.chordType)
+	);
+	return nextText;
 };

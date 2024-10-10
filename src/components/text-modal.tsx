@@ -96,7 +96,6 @@ export class InsertTextModal extends Modal {
 						this.chordOriginText,
 						this.board
 					).toDOM();
-					console.log(chordCardDom);
 					
 					btn.buttonEl.appendChild(chordCardDom);
 					btn.setClass("chord-card-setting-btn").onClick(() =>

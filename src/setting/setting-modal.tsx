@@ -14,7 +14,7 @@ export class ChordCardSettingModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "Chord Card Settings" });
+		contentEl.createEl("h1", { text: "Chord card settings" });
 
 		useCommonSettings({
 			containerEl: contentEl,

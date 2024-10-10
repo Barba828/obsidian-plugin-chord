@@ -1,18 +1,28 @@
+import { ModeType, NoteAll } from "@buitar/to-guitar";
+
+/**
+ * Render card size (width * height)
+ */
 export enum ChordCardSize {
-	Small = 'small',
-	Medium = 'medium',
-	Large = 'large',
+	Small = "small",
+	Medium = "medium",
+	Large = "large",
 }
 
 export enum ChordCardDisplayMode {
-	DEFAULT = '',
-	TEXT = 'text',
-	FIXED = 'fixed',
+	Default = "",
+	Text = "text",
+	Fixed = "fixed",
 	// CODE = 3, // close renderCode
 }
 
 export interface ChordCardPluginSettings {
 	size: ChordCardSize;
 	displayMode: ChordCardDisplayMode;
-    renderCode: boolean;
+	renderCode: boolean;
+}
+
+export type PageChordSetting = {
+	key: NoteAll;
+	mode: Extract<ModeType, 'major' | 'minor'>;
 }

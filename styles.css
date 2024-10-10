@@ -80,3 +80,11 @@
 	height: auto;
 	padding: var(--size-4-3) var(--size-4-3);
 }
+
+.scroll-without-bar {
+	overflow: auto;
+	scrollbar-width: none;
+}
+.scroll-without-bar::-webkit-scrollbar {
+	display: none;
+}
