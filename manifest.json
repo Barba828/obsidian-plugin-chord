@@ -1,7 +1,7 @@
 {
 	"id": "guitar-chord",
 	"name": "Guitar Chord",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"minAppVersion": "0.15.0",
 	"description": "Quickly enter and display guitar chords, with optional chords based on music theory. No need to write in code blocks, they can be inserted and edited directly in the document.",
 	"author": "Barba828",

@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-plugin-chord-card",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Obsidian plugin for quickly writing and displaying guitar chords.",
 	"main": "main.js",
 	"scripts": {

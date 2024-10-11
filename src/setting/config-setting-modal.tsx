@@ -108,7 +108,7 @@ export class ChordCardConfigModal extends Modal {
 			this.reactRoots["chords"]?.render(
 				<ChordsView
 					chords={this.originChords}
-					board={this?.plugin.board}
+					board={this.plugin.board}
 				/>
 			);
 		});
@@ -203,12 +203,12 @@ export class ChordCardConfigModal extends Modal {
 			nextChords = this.originChords.map((originChord) => {
 				const nextChord = transChordChangeKey(
 					originChord,
-					this?.plugin.board,
+					this.plugin.board,
 					{
 						key: originKey || "C",
 						mode: originMode || "major",
-						targetMode: this?.frontmatter?.mode,
-						targetKey: this?.frontmatter?.key,
+						targetMode: this.frontmatter?.mode,
+						targetKey: this.frontmatter?.key,
 					}
 				);
 				this._replaceChordMap[originChord] = nextChord;
@@ -220,7 +220,7 @@ export class ChordCardConfigModal extends Modal {
 		}
 
 		this.reactRoots["chords"]?.render(
-			<ChordsView chords={nextChords} board={this?.plugin.board} />
+			<ChordsView chords={nextChords} board={this.plugin.board} />
 		);
 	};
 
