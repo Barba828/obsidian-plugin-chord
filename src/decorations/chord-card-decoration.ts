@@ -10,17 +10,24 @@ import {
 import { Decoration, DecorationSet, EditorView } from "@codemirror/view";
 import { getChordWidget } from "src/decorations/utils";
 import { EditorPosition } from "obsidian";
+import { ChordCardPluginSettings } from "src/setting";
 
-export const createInlineCodeField = (
-	board: Board,
+interface InlineCodeFieldParams {
+	board: Board;
+	options: ChordCardPluginSettings;
 	onClick?: (
 		key: string,
 		position: { from: EditorPosition; to?: EditorPosition },
 		ev?: MouseEvent
-	) => void
-) =>
-	StateField.define<DecorationSet>({
+	) => void;
+}
 
+export const createInlineCodeField = ({
+	board,
+	onClick,
+	options,
+}: InlineCodeFieldParams) =>
+	StateField.define<DecorationSet>({
 		create(state): DecorationSet {
 			return Decoration.none;
 		},
@@ -28,14 +35,25 @@ export const createInlineCodeField = (
 			decorations: DecorationSet,
 			transaction: Transaction
 		): DecorationSet {
+			if (!options.renderCode) {
+				return Decoration.none;
+			}
 			const builder = new RangeSetBuilder<Decoration>();
-
 			syntaxTree(transaction.state).iterate({
 				enter(node: TreeCursor) {
+					const doc = transaction.state.doc;
+					const from = node.from;
+					const to = node.to;
+
 					if (node.type.name === "inline-code") {
-						const doc = transaction.state.doc;
-						const from = node.from;
-						const to = node.to;
+						// 清理无效 inline-code
+						const str = transaction.state.doc.sliceString(
+							from - 1,
+							to + 1
+						);
+						if (!str.startsWith("`") || !str.endsWith("`")) {
+							return;
+						}
 
 						// 将偏移量转换为行和列
 						const fromLine = doc.lineAt(from).number - 1; // 行号从 0 开始计数
@@ -45,11 +63,23 @@ export const createInlineCodeField = (
 
 						const key = transaction.state.doc.sliceString(from, to);
 						if (key.startsWith(":chord:") && key.endsWith(":")) {
-							const widget = getChordWidget(key, board, (event) =>
+							const widget = getChordWidget({
+								key,
+								board,
+								options,
+							});
+							/**
+							 * 这里不在 widget 构造函数中传入 onClick，因为 click 的 position 参数会变化
+							 * 选择每次手动 setClick
+							 */
+							widget.setClick((event: MouseEvent) =>
 								onClick?.(
 									key,
 									{
-										from: { line: fromLine, ch: fromCh },
+										from: {
+											line: fromLine,
+											ch: fromCh,
+										},
 										to: { line: toLine, ch: toCh },
 									},
 									event

@@ -6,20 +6,33 @@ import { Board, Point } from "@buitar/to-guitar";
 import { EditorView, WidgetType } from "@codemirror/view";
 import { transToSvgPoints } from "src/utils/trans-svg";
 import { getPointsByStr, useChordText } from "src/utils";
+import {
+	ChordCardDisplayMode,
+	ChordCardPluginSettings,
+	ChordCardSize,
+} from "src/setting";
 
 export const chordMap = new Map<string, ChordWidget>();
+
+interface ChordWidgetProps {
+	key: string;
+	board: Board;
+	onClick?: (ev: MouseEvent) => void;
+	options?: Pick<ChordCardPluginSettings, "displayMode" | "size">;
+}
 
 /**
  * Get widget from map, if not exist, create new widget
  */
-export const getChordWidget = (
-	key: string,
-	board: Board,
-	onClick?: (ev: MouseEvent) => void
-) => {
+export const getChordWidget = ({
+	key,
+	board,
+	onClick,
+	options,
+}: ChordWidgetProps) => {
 	let widget = chordMap.get(key);
 	if (!widget) {
-		widget = new ChordWidget(key, board, onClick);
+		widget = new ChordWidget(key, board, onClick, options);
 		chordMap.set(key, widget);
 	}
 	return widget;
@@ -31,10 +44,13 @@ export class ChordWidget extends WidgetType {
 	type: string;
 	text: string;
 
+	contentEl: HTMLElement;
+
 	constructor(
 		public readonly key: string,
 		public readonly board: Board,
-		public readonly onClick?: (ev: MouseEvent) => void
+		public onClick?: (ev: MouseEvent) => void,
+		public options?: Pick<ChordCardPluginSettings, "displayMode" | "size">
 	) {
 		super();
 		const { type, pointStr, title, text } = useChordText(key);
@@ -47,23 +63,65 @@ export class ChordWidget extends WidgetType {
 	toDOM(view?: EditorView): HTMLElement {
 		const span = document.createElement("span");
 		const root = createRoot(span);
+		const size = sizeMap[this.options?.size || ChordCardSize.Medium];
 		root.render(
 			<span className={`chord-widget__wrap`}>
-				<SvgChord
-					points={transToSvgPoints(this.points)}
-					size={80}
-					title={this.title}
-					color="var(--text-normal)"
-					className="chord-widget"
-				/>
+				{this.options?.displayMode === ChordCardDisplayMode.Text ? (
+					<>
+						<SvgChord
+							points={transToSvgPoints(this.points)}
+							size={size}
+							title={this.title}
+							color="var(--text-normal)"
+							className="chord-widget chord-widget__wrap-fixed"
+						/>
+						<div className="chord-widget__wrap-title">
+							{this.title}
+						</div>
+					</>
+				) : this.options?.displayMode === ChordCardDisplayMode.Fixed ? (
+					<>
+						<SvgChord
+							points={transToSvgPoints(this.points)}
+							size={size}
+							title={this.title}
+							color="var(--text-normal)"
+							className="chord-widget chord-widget__wrap-fixed"
+						/>
+						{!this.text && (
+							<span className="chord-widget__wrap-text">
+								{this.title}
+							</span>
+						)}
+					</>
+				) : (
+					<SvgChord
+						points={transToSvgPoints(this.points)}
+						size={size}
+						title={this.title}
+						color="var(--text-normal)"
+						className="chord-widget"
+					/>
+				)}
 				{this.text && (
 					<span className="chord-widget__wrap-text">{this.text}</span>
 				)}
 			</span>
 		);
-		if (this.onClick) {
-			span.onclick = this.onClick;
-		}
+		this.contentEl = span;
+		this.setClick(this.onClick);
 		return span;
 	}
+
+	setClick(onClick?: (ev: MouseEvent) => void) {
+		if (onClick && this.contentEl) {
+			this.contentEl.onclick = onClick;
+		}
+	}
 }
+
+const sizeMap = {
+	[ChordCardSize.Small]: 60,
+	[ChordCardSize.Medium]: 80,
+	[ChordCardSize.Large]: 120,
+};

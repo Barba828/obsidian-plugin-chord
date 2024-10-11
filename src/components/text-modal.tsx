@@ -75,8 +75,8 @@ export class InsertTextModal extends Modal {
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
+					this.save();
 					this.close();
-					this.onSave();
 				})
 		);
 	}
@@ -96,6 +96,7 @@ export class InsertTextModal extends Modal {
 						this.chordOriginText,
 						this.board
 					).toDOM();
+					
 					btn.buttonEl.appendChild(chordCardDom);
 					btn.setClass("chord-card-setting-btn").onClick(() =>
 						new ChordCustomTapsModal(
@@ -112,7 +113,7 @@ export class InsertTextModal extends Modal {
 		}
 	};
 
-	onSave = () => {
+	save = () => {
 		if (!this.chordOriginText) {
 			this.onChooseTapText?.(this.chordText);
 			return;

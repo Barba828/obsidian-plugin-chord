@@ -80,7 +80,7 @@ export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
 				<SvgChord
 					points={transToSvgPoints(tap.chordTaps)}
 					size={80}
-					title={getChordName(tap.chordType, this.board)}
+					title={getChordName(tap.chordType)}
 				/>
 				<div
 					style={{
@@ -121,7 +121,7 @@ export class ChordCustomTapsModal extends SuggestModal<BoardChord> {
 	onChooseSuggestion(tap: BoardChord) {
 		const insertText = transToMdCode(
 			tap.chordTaps,
-			getChordName(tap.chordType, this.board)
+			getChordName(tap.chordType)
 		);
 		this.onChooseTapText?.(insertText);
 	}

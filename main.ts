@@ -6,10 +6,30 @@ import { createInlineCodeField } from "src/decorations/chord-card-decoration";
 import { chordCardPostProcessor } from "src/decorations/chord-card-processor";
 import { Board } from "@buitar/to-guitar";
 import { useChordText } from "src/utils";
+import {
+	type ChordCardPluginSettings,
+	DEFAULT_SETTINGS,
+	ChordCardPluginTab,
+	ChordCardSettingModal,
+	ChordCardConfigModal,
+} from "src/setting";
 
 export default class ChordCardPlugin extends Plugin {
 	board: Board = new Board();
+	settings: ChordCardPluginSettings;
+	actions: Record<string, HTMLElement> = {};
+
 	async onload() {
+		await this.loadSettings();
+		this.addSettingTab(new ChordCardPluginTab(this.app, this));
+
+		this.initCommands();
+		this.initRenderExtension();
+		this.initActions();
+	}
+
+	/**初始化 chord-card 命令*/
+	initCommands = () => {
 		this.addCommand({
 			id: "insert-chord-card",
 			name: "Insert chord card",
@@ -58,29 +78,92 @@ export default class ChordCardPlugin extends Plugin {
 				}
 			},
 		});
+	};
+
+	/**初始化 chord-card 渲染方法*/
+	initRenderExtension = () => {
 		/**装饰器，编辑时渲染ChordCard */
 		this.registerEditorExtension([
-			createInlineCodeField(this.board, (key, position) => {
-				const editor = this.app.workspace.activeEditor?.editor;
-				if (!editor) return;
+			createInlineCodeField({
+				board: this.board,
+				options: this.settings,
+				onClick: (key, position) => {
+					const editor = this.app.workspace.activeEditor?.editor;
+					if (!editor) return;
 
-				new InsertTextModal(
-					this.app,
-					this.board,
-					(text) => this.insertTextAtCursor(text, position),
-					key
-				).open();
+					new InsertTextModal(
+						this.app,
+						this.board,
+						(text) => this.insertTextAtCursor(text, position),
+						key
+					).open();
+				},
 			}),
 		]);
 		/**MD后处理，渲染ChordCard */
 		this.registerMarkdownPostProcessor((el, ctx) => {
-			chordCardPostProcessor(el, ctx, this.board);
+			chordCardPostProcessor({
+				element: el,
+				context: ctx,
+				board: this.board,
+				options: this.settings,
+			});
 		});
+	};
 
-		// this.registerEvent(
-		// 	this.app.workspace.on("active-leaf-change", this.updateActionIcon)
-		// );
-	}
+	/**初始化 chord-card 右上角actions*/
+	initActions = () => {
+		// onLayoutReady 确保有 activeView
+		this.app.workspace.onLayoutReady(() => {
+			const activeView =
+				this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!activeView) {
+				return;
+			}
+
+			this.actions["open-settings"] = activeView.addAction(
+				"settings-2",
+				"Chord card settings",
+				() => {
+					new ChordCardSettingModal(this.app, this).open();
+				}
+			);
+			this.actions["open-config"] = activeView.addAction(
+				"file-edit",
+				"Page chord config",
+				() => {
+					new ChordCardConfigModal(this.app, this).open();
+				}
+			);
+			this.actions["open-render"] = activeView.addAction(
+				"eye",
+				"Chord card preview",
+				() => {
+					this.settings.renderCode = false;
+					this.saveSettings();
+				}
+			);
+			this.actions["close-render"] = activeView.addAction(
+				"eye-off",
+				"Chord card preview",
+				() => {
+					this.settings.renderCode = true;
+					this.saveSettings();
+				}
+			);
+
+			// 初始化时 更新 icons 状态
+			this.refreshActionIcons();
+
+			// 监听页面变化时 更新 icons 状态
+			this.registerEvent(
+				this.app.workspace.on(
+					"active-leaf-change",
+					this.refreshActionIcons
+				)
+			);
+		});
+	};
 
 	/**
 	 * 插入 code 文本
@@ -112,43 +195,75 @@ export default class ChordCardPlugin extends Plugin {
 			ch: from.ch + _text.length,
 		};
 		editor.setCursor(newCursorPos);
-	}
+	};
 
 	/**
-	 * @todo 完善 view 内 chord 设置菜单
-	 * @returns 
-	 */
-	updateActionIcon = () => {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!activeView) return;
-
-		const hasChord = this.hasChordCard();
-		const existingIcon = activeView.containerEl.find('[aria-label="Chord setting"]')
-
-		activeView.getIcon();
-
-		// 如果 hasChord 且没有 Chord 菜单，添加菜单
-		if (hasChord && !existingIcon) {
-			activeView.addAction("music", "Chord setting", () => {
-				console.log("Music icon clicked");
-			});
-		}
-
-		// 如果 !hasChord 且存在 Chord 菜单，移除菜单
-		if (!hasChord && existingIcon) {
-			activeView.addAction
-			existingIcon.remove();
-		}
-	}
-
-	/**
-	 * 判断当前View是否存在chord-card
+	 * 判断当前 View 是否存在 chord-card
 	 * @returns
 	 */
 	hasChordCard = () => {
 		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		return activeView && activeView.contentEl.find(".chord-widget__wrap");
+		return activeView && activeView.editor.getValue().includes(":chord:");
+	};
+
+	loadSettings = async () => {
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
+	};
+
+	saveSettings = async () => {
+		await this.saveData(this.settings);
+		this.refreshCurrentDocument();
+		this.refreshActionIcons();
+	};
+
+	/**
+	 * 刷新当前文档
+	 * 更新设置后需要重新渲染 Chordcard
+	 */
+	refreshCurrentDocument() {
+		// preview 模式重渲染
+		this.app.workspace
+			.getActiveViewOfType(MarkdownView)
+			?.previewMode.rerender(true);
+
+		// editor 模式触发页面刷新
+		const editor =
+			this.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+		if (editor) {
+			editor.focus();
+			// 强制改变文档内容然后恢复（触发重新渲染）
+			editor.setValue(editor.getValue());
+			// 刷新编辑器视图
+			editor.refresh();
+			editor.blur()
+		}
 	}
+
+	/**
+	 * 刷新当前action icon显示
+	 */
+	refreshActionIcons = () => {
+		const hasChord = this.hasChordCard();
+		if (!hasChord) {
+			Object.values(this.actions).forEach((action) => {
+				action.setCssStyles({ display: "none" });
+			});
+			return;
+		}
+
+		this.actions["open-settings"].setCssStyles({ display: "block" });
+		this.actions["open-config"].setCssStyles({ display: "block" });
+		this.actions["open-render"].setCssStyles({
+			display: this.settings.renderCode ? "block" : "none",
+		});
+		this.actions["close-render"].setCssStyles({
+			display: this.settings.renderCode ? "none" : "block",
+		});
+	};
 
 	onunload() {}
 }

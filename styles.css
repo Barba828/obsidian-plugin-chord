@@ -23,26 +23,49 @@
 	border-radius: 2px;
 }
 
-.chord-widget__wrap {
-	display: inline-flex;
-	flex-direction: column;
-	align-items: center;
-	vertical-align: bottom;
-	text-decoration: underline;
-}
-
 .chord-widget {
 	cursor: pointer;
 	border-radius: 0.6rem;
 }
 
+.chord-widget__wrap {
+	position: relative;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	vertical-align: bottom;
+}
+
+.chord-widget__wrap-title {
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.chord-widget__wrap-fixed {
+	position: absolute;
+	bottom: 1.4rem;
+	opacity: 0;
+	display: none;
+}
+
+.chord-widget__wrap-text {
+	text-decoration: underline;
+}
+
 .chord-widget__wrap:hover .chord-widget {
 	background-color: var(--dropdown-background-hover);
 	transition: all 0.2s ease-in-out;
+	z-index: 1;
 }
 
 .chord-widget__wrap:hover .chord-widget__wrap-text {
 	color: var(--color-base-70);
+	transition: all 0.2s ease-in-out;
+}
+
+.chord-widget__wrap:hover .chord-widget__wrap-fixed {
+	opacity: 1;
+	display: block;
 	transition: all 0.2s ease-in-out;
 }
 
@@ -56,4 +79,12 @@
 .chord-card-setting-btn {
 	height: auto;
 	padding: var(--size-4-3) var(--size-4-3);
+}
+
+.scroll-without-bar {
+	overflow: auto;
+	scrollbar-width: none;
+}
+.scroll-without-bar::-webkit-scrollbar {
+	display: none;
 }
